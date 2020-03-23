@@ -2,7 +2,7 @@ library(tximport)
 library(readr)
 library(DESeq2)
 
-######To Generate the tx2gene.gencode file #########
+######To Generate the Transcripts to geneids tx2gene.gencode file #########
 
 #library(tximportData)
 #library(GenomicFeatures)
@@ -18,7 +18,7 @@ library(DESeq2)
 #length(k)
 #write.table(tx2gene, "tx2gene.gencode.v28.csv", sep = ",", row.names = FALSE)
 
-#output file
+#counts file generated from Salmon
 dirs = "./salmon_out"
 sys_dir <- system.file("extdata", package = "tximportData")
 samples = dir(file.path(dirs))
@@ -33,22 +33,19 @@ sampleTable <- data.frame(condition = factor(c("Untreated","Dex","Untreated","De
 rownames(sampleTable) <- colnames(txi$counts)
 
 
-
-
-
-
-
 ds <- DESeqDataSetFromTximport(txi,
                                 colData = sampleTable,
                                 design = ~ condition)
-#Exxecute the Deseq pipeline
+#Execute the Deseq pipeline
 dds <- DESeq(ds)
 
-# Get differential expression results
+## Get differential expression results
 res <- results(dds)
 table(res$padj<0.02)
+
 ## Order by adjusted p-value
 res <- res[order(res$padj), ]
+
 ## Merge with normalized count data
 resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE)), by="row.names", sort=FALSE)
 names(resdata)[1] <- "Gene ID"
